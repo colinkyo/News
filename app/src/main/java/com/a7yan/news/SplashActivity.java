@@ -11,6 +11,9 @@ import android.view.animation.ScaleAnimation;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.a7yan.news.activity.GuideActivity;
+import com.a7yan.news.utils.CacheUtils;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -61,9 +64,17 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onAnimationEnd(Animation animation) {
             Toast.makeText(SplashActivity.this, "动画播放完成", Toast.LENGTH_SHORT).show();
+            boolean isStartMain = CacheUtils.getBoolean(SplashActivity.this,GuideActivity.START_MAIN);
+            if(isStartMain)
+            {
+                Intent intent = new Intent(SplashActivity.this,MainActivity.class);
+                startActivity(intent);
+            }else
+            {
 //            进入引导页面
-            Intent intent = new Intent(SplashActivity.this,GuideActivity.class);
-            startActivity(intent);
+                Intent intent = new Intent(SplashActivity.this,GuideActivity.class);
+                startActivity(intent);
+            }
 //            关闭当前页面
             finish();
 
