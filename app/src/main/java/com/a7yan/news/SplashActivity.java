@@ -1,5 +1,6 @@
 package com.a7yan.news;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.animation.AlphaAnimation;
@@ -60,6 +61,12 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onAnimationEnd(Animation animation) {
             Toast.makeText(SplashActivity.this, "动画播放完成", Toast.LENGTH_SHORT).show();
+//            进入引导页面
+            Intent intent = new Intent(SplashActivity.this,GuideActivity.class);
+            startActivity(intent);
+//            关闭当前页面
+            finish();
+
         }
 //      动画重复播放
         @Override
