@@ -31,4 +31,10 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     //    add Butter Knife
     compile project(':SlidingMenu_library')
+    //okhttp3 and okhttputils
+    compile files('libs/okhttputils-2_6_2.jar')
+    compile files('libs/okhttp-3.5.0.jar')
+    compile files('libs/okio-1.11.0.jar')
+    //okhttp3 and okhttputils
+    compile files('libs/fastjson-1.1.54.android.jar')
 }
