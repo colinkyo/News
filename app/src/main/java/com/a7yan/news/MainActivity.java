@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.view.Window;
 
 import com.a7yan.news.fragment.ContentFragment;
 import com.a7yan.news.fragment.LeftmenuFragment;
@@ -22,6 +23,8 @@ public class MainActivity extends SlidingFragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+//        去掉标题栏
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         initSlidingMenu();
         initFragment();

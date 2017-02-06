@@ -2,6 +2,7 @@ package com.a7yan.news.pager;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.a7yan.news.detailpager.PhotosDetailPager;
 import com.a7yan.news.detailpager.TopicDetailPager;
 import com.a7yan.news.domain.NewsCenterPagerBean;
 import com.a7yan.news.fragment.LeftmenuFragment;
+import com.a7yan.news.utils.CacheUtils;
 import com.a7yan.news.utils.Constants;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -65,6 +67,10 @@ public class NewsCenterPager extends BasePager {
 //        把内容添加到fl_content去
         fl_content.addView(textView);
 //        联网请求
+        String savejson = CacheUtils.getString(mContext,Constants.NEWSCENTER_URL);
+        if(!TextUtils.isEmpty(savejson)){
+            processData(savejson);
+        }
         getDataFromNet();
     }
 
@@ -125,6 +131,8 @@ public class NewsCenterPager extends BasePager {
 //            根据id,处理不同的联网请求
             switch (id) {
                 case 100:
+//                    保存数据
+                    CacheUtils.putString(mContext,Constants.NEWSCENTER_URL,response);
 //                    解析数据,json格式
                     processData(response);
                     break;
@@ -143,7 +151,7 @@ public class NewsCenterPager extends BasePager {
         LeftmenuFragment leftmenuFragment =mainActivity.getLeftmenuFragment();
 //        创建四个页面一定要先与传递数据
         detailBasePagers = new ArrayList<>();
-        detailBasePagers.add(new NewsDetailPager(mContext));
+        detailBasePagers.add(new NewsDetailPager(mContext,data.get(0)));
         detailBasePagers.add(new TopicDetailPager(mContext));
         detailBasePagers.add(new PhotosDetailPager(mContext));
         detailBasePagers.add(new InteracDetailPager(mContext));
