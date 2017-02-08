@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.a7yan.news.R;
 import com.a7yan.news.base.DetailBasePager;
@@ -21,6 +22,7 @@ import com.a7yan.news.utils.CacheUtils;
 import com.a7yan.news.utils.Constants;
 import com.a7yan.news.utils.DensityUtil;
 import com.a7yan.news.view.HorizontalScrollViewPager;
+import com.a7yan.news.view.RefreshListView;
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -40,7 +42,7 @@ import okhttp3.Request;
 public class TabDetailPager extends DetailBasePager {
 
     //@BindView(R.id.listview)
-    private ListView listview;
+    private RefreshListView listview;
     @BindView(R.id.viewpage)
     HorizontalScrollViewPager viewpage;
     @BindView(R.id.tv_title)
@@ -57,6 +59,8 @@ public class TabDetailPager extends DetailBasePager {
     private int preSelectPosition;
     private List<TabDetailPagerBean.DataBean.NewsBean> news;
     private TabDetailPagerListAdapter adapter;
+    private String moreurl;
+    private boolean isLoadMore = false;
 
     public TabDetailPager(Context context, NewsCenterPagerBean.NewsCenterPagerData.ChildrenData childrenData) {
         super(context);
@@ -72,7 +76,7 @@ public class TabDetailPager extends DetailBasePager {
         textView.setTextColor(Color.RED);
         return textView;*/
         View view = View.inflate(mContext, R.layout.tab_detail_pager, null);
-        listview = (ListView) view.findViewById(R.id.listview);
+        listview = (RefreshListView ) view.findViewById(R.id.listview);
         View topnewsView = View.inflate(mContext, R.layout.topnews, null);
 //        使用ButterKnife绑定XML文件
         //ButterKnife.bind(this, view);
@@ -80,10 +84,83 @@ public class TabDetailPager extends DetailBasePager {
 //        监听ViewPage页面的变化动态改变红点和标题
         viewpage.addOnPageChangeListener(new MyOnPageChangeListener());
 //        把顶部新闻模块以头的方式加载到ListView中
-        listview.addHeaderView(topnewsView);
+//        listview.addHeaderView(topnewsView);
+//        ListView自定义方法
+        listview.addTopNews(topnewsView);
+//        监听控件刷新
+        listview.setOnRefreshListener(new MysetOnRefreshListener());
         return view;
     }
+    class MysetOnRefreshListener implements RefreshListView.OnRefreshListener{
 
+        @Override
+        public void onPullDownlRefresh(){
+            getDataFromNet();
+        }
+
+        @Override
+        public void onLoadMore() {
+            if(TextUtils.isEmpty(moreurl))
+            {
+                Toast.makeText(mContext, "没有更多数据啦", Toast.LENGTH_SHORT).show();
+                listview.onRefreshFinish(false);
+
+            }else {
+                getMoreDataFromNet();
+            }
+        }
+    }
+
+    private void getMoreDataFromNet() {
+        OkHttpUtils
+                .get()
+                .url(moreurl)
+                .id(100)
+                .build()
+                .execute(new MyMoreStringCallback());
+    }
+    class MyMoreStringCallback extends StringCallback {
+        @Override
+        public void onBefore(Request request, int id) {
+            super.onBefore(request, id);
+            Log.d("MyStringCallback", "开始联网。。。");
+        }
+
+        @Override
+        public void onAfter(int id) {
+            super.onAfter(id);
+            Log.d("MyStringCallback", "结束联网。。成功失败都会执行。");
+        }
+
+        @Override
+        public void inProgress(float progress, long total, int id) {
+            super.inProgress(progress, total, id);
+            Log.d("MyStringCallback", "联网中。。。");
+        }
+
+        @Override
+        public void onError(Call call, Exception e, int i) {
+            e.printStackTrace();
+            listview.onRefreshFinish(false);
+            Log.d("MyStringCallback", "联网失败:" + e.getMessage());
+        }
+
+        @Override
+        public void onResponse(String response, int id) {
+            Log.d("MyStringCallback", "联网成功。。。" + response);
+//            根据id,处理不同的联网请求
+            switch (id) {
+                case 100:
+                    isLoadMore =true;
+//                    保存数据
+//                    CacheUtils.putString(mContext, url, response);
+//                    解析数据,json格式
+                    processData(response);
+                    listview.onRefreshFinish(false);
+                    break;
+            }
+        }
+    }
     private class MyOnPageChangeListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -129,17 +206,29 @@ public class TabDetailPager extends DetailBasePager {
     private void processData(String savejson) {
         TabDetailPagerBean bean = parsedJson(savejson);
         Log.d("TabDetailPager", bean.getData().getNews().get(2).getTitle());
-        //1.设置ViewPager的数据
-        //得到顶部的数据
-        topnews = bean.getData().getTopnews();
-        viewpage.setAdapter(new TabDetailPagerAdapter());
-        addPoint();
+
+        String more = bean.getData().getMore();
+        if(TextUtils.isEmpty(more)){
+            moreurl = "";
+        }else{
+            moreurl = Constants.BASE_URL+more;
+        }
+        if(!isLoadMore){
+            //1.设置ViewPager的数据
+            //得到顶部的数据
+            topnews = bean.getData().getTopnews();
+            viewpage.setAdapter(new TabDetailPagerAdapter());
+            addPoint();
 //        设置listview的适配器
-        news = bean.getData().getNews();
-        adapter = new TabDetailPagerListAdapter();
-        listview.setAdapter(adapter);
+            news = bean.getData().getNews();
+            adapter = new TabDetailPagerListAdapter();
+            listview.setAdapter(adapter);
 
-
+        }else {
+            news.addAll(bean.getData().getNews());
+            adapter.notifyDataSetChanged();
+            isLoadMore = false;
+        }
     }
 
     class TabDetailPagerListAdapter extends BaseAdapter {
@@ -299,11 +388,13 @@ public class TabDetailPager extends DetailBasePager {
         @Override
         public void onError(Call call, Exception e, int i) {
             e.printStackTrace();
+            listview.onRefreshFinish(false);
             Log.d("MyStringCallback", "联网失败:" + e.getMessage());
         }
 
         @Override
         public void onResponse(String response, int id) {
+            listview.onRefreshFinish(true);
             Log.d("MyStringCallback", "联网成功。。。" + response);
 //            根据id,处理不同的联网请求
             switch (id) {
