@@ -1,4 +1,4 @@
-package com.a7yan.news.view;
+package com.example.refreshlistview;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -12,8 +12,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.a7yan.news.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

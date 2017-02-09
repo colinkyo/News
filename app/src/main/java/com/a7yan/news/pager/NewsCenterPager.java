@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.a7yan.news.MainActivity;
 import com.a7yan.news.base.BasePager;
@@ -20,8 +19,6 @@ import com.a7yan.news.domain.NewsCenterPagerBean;
 import com.a7yan.news.fragment.LeftmenuFragment;
 import com.a7yan.news.utils.CacheUtils;
 import com.a7yan.news.utils.Constants;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -33,8 +30,6 @@ import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Request;
-
-import static android.R.id.list;
 
 /**
  * Created by 7Yan on 2017/1/24.
@@ -152,7 +147,7 @@ public class NewsCenterPager extends BasePager {
 //        创建四个页面一定要先与传递数据
         detailBasePagers = new ArrayList<>();
         detailBasePagers.add(new NewsDetailPager(mContext,data.get(0)));
-        detailBasePagers.add(new TopicDetailPager(mContext));
+        detailBasePagers.add(new TopicDetailPager(mContext,data.get(0)));
         detailBasePagers.add(new PhotosDetailPager(mContext));
         detailBasePagers.add(new InteracDetailPager(mContext));
 

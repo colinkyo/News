@@ -1,20 +1,23 @@
 package com.a7yan.news.detailpager;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a7yan.news.R;
+import com.a7yan.news.activity.NewsDetailActivity;
 import com.a7yan.news.base.DetailBasePager;
 import com.a7yan.news.domain.NewsCenterPagerBean;
 import com.a7yan.news.domain.TabDetailPagerBean;
@@ -22,9 +25,9 @@ import com.a7yan.news.utils.CacheUtils;
 import com.a7yan.news.utils.Constants;
 import com.a7yan.news.utils.DensityUtil;
 import com.a7yan.news.view.HorizontalScrollViewPager;
-import com.a7yan.news.view.RefreshListView;
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
+import com.example.refreshlistview.RefreshListView;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -41,6 +44,7 @@ import okhttp3.Request;
 
 public class TabDetailPager extends DetailBasePager {
 
+    public static final String READ_ARRAY_ID = "read_array_id";
     //@BindView(R.id.listview)
     private RefreshListView listview;
     @BindView(R.id.viewpage)
@@ -89,7 +93,31 @@ public class TabDetailPager extends DetailBasePager {
         listview.addTopNews(topnewsView);
 //        监听控件刷新
         listview.setOnRefreshListener(new MysetOnRefreshListener());
+//        设置单击监听
+        listview.setOnItemClickListener(new MyOnItemClickListener());
         return view;
+    }
+    class  MyOnItemClickListener implements AdapterView.OnItemClickListener{
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//            因为有头部，所以数据的下标需要把位置减去1
+            int realPosition = position -1;
+            TabDetailPagerBean.DataBean.NewsBean newsData = news.get(realPosition);
+            Log.d("MyOnItemClickListener", newsData.toString());
+            String readArrayId =CacheUtils.getString(mContext, READ_ARRAY_ID);
+            if(!readArrayId.contains(newsData.getId()+"")){
+                //保存
+                //""->"35111,35112,"
+                CacheUtils.putString(mContext,READ_ARRAY_ID,readArrayId+newsData.getId()+",");
+                //2.刷新适配器,重新加载数据绘制视图时，可以判断是否点击过
+                adapter.notifyDataSetChanged();
+            }
+//            打开新闻详情页面
+            Intent intent = new Intent(mContext,NewsDetailActivity.class);
+            intent.putExtra("url",newsData.getUrl());
+            Log.d("MyOnItemClickListener", "要打开的新闻详情页面=============" + newsData.getUrl());
+            mContext.startActivity(intent);
+        }
     }
     class MysetOnRefreshListener implements RefreshListView.OnRefreshListener{
 
@@ -270,6 +298,13 @@ public class TabDetailPager extends DetailBasePager {
                     .into(viewHolder.iv_icon);
             viewHolder.tv_title.setText(newsBean.getTitle());
             viewHolder.tv_time.setText(newsBean.getPubdate());
+//            判断是否点击过
+            String readArrayId = CacheUtils.getString(mContext, READ_ARRAY_ID);
+            if(readArrayId.contains(newsBean.getId()+"")){
+                viewHolder.tv_title.setTextColor(Color.GRAY);
+            }else{
+                viewHolder.tv_title.setTextColor(Color.BLACK);
+            }
             return convertView;
         }
 

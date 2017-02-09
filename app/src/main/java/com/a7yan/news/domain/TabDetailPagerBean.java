@@ -97,6 +97,21 @@ public class TabDetailPagerBean {
         }
 
         public static class NewsBean {
+            @Override
+            public String toString() {
+                return "NewsBean{" +
+                        "comment=" + comment +
+                        ", id=" + id +
+                        ", title='" + title + '\'' +
+                        ", url='" + url + '\'' +
+                        ", listimage='" + listimage + '\'' +
+                        ", pubdate='" + pubdate + '\'' +
+                        ", commenturl='" + commenturl + '\'' +
+                        ", type='" + type + '\'' +
+                        ", commentlist='" + commentlist + '\'' +
+                        '}';
+            }
+
             /**
              * id : 147314
              * title : 徒步登高欣赏京城第一片红叶
