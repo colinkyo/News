@@ -14,4 +14,9 @@ public class Constants
      */
     public static final String NEWSCENTER_URL = BASE_URL +"/static/api/news/categories.json";
 
+    /**
+     * 图组的连接
+     */
+    public static final String PHOTOS_URL = BASE_URL +"/static/api/news/photos/photos_1.json";
+
 }

@@ -92,6 +92,12 @@ public class NewsCenterPager extends BasePager {
         fl_content.removeAllViews();
 //        添加视图
         fl_content.addView(view);
+        if(position == 2){
+//            当打开图组时显示
+            ib_swich_list_grid.setVisibility(View.VISIBLE);
+        }else {
+            ib_swich_list_grid.setVisibility(View.GONE);
+        }
 
     }
 

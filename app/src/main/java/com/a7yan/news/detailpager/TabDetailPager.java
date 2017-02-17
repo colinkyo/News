@@ -3,10 +3,13 @@ package com.a7yan.news.detailpager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -65,6 +68,8 @@ public class TabDetailPager extends DetailBasePager {
     private TabDetailPagerListAdapter adapter;
     private String moreurl;
     private boolean isLoadMore = false;
+    private InteracHandler handler;
+    private boolean isDragging;
 
     public TabDetailPager(Context context, NewsCenterPagerBean.NewsCenterPagerData.ChildrenData childrenData) {
         super(context);
@@ -214,6 +219,27 @@ public class TabDetailPager extends DetailBasePager {
 
         @Override
         public void onPageScrollStateChanged(int state) {
+            switch (state){
+                case ViewPager.SCROLL_STATE_DRAGGING:
+                    Log.e("TAG", "SCROLL_STATE_DRAGGING --移除消息了了");
+                    handler.removeCallbacksAndMessages(null);//移除所有的消息和回调
+                    isDragging = true;
+                    break;
+                case ViewPager.SCROLL_STATE_IDLE:
+                    isDragging = false;
+                    Log.e("TAG", "SCROLL_STATE_IDLE --发消息");
+                    handler.removeCallbacksAndMessages(null);//移除所有的消息和回调
+                    handler.postDelayed(new MyRunnable(),4000);
+                    break;
+                case ViewPager.SCROLL_STATE_SETTLING:
+                    if(isDragging){
+                        isDragging = false;
+                        Log.e("TAG", "SCROLL_STATE_SETTLING --发消息");
+                        handler.removeCallbacksAndMessages(null);//移除所有的消息和回调
+                        handler.postDelayed(new MyRunnable(),4000);
+                    }
+                    break;
+            }
 
         }
     }
@@ -254,11 +280,35 @@ public class TabDetailPager extends DetailBasePager {
 
         }else {
             news.addAll(bean.getData().getNews());
+            //刷新适配器
             adapter.notifyDataSetChanged();
+            //加载更多
             isLoadMore = false;
         }
+        //每隔4秒图片循环一次
+        if(handler==null)
+        {
+            handler = new InteracHandler();
+        }
+        handler.removeCallbacksAndMessages(null);////移除所有的消息和回调
+        handler.postDelayed(new MyRunnable(),4000);
     }
+    class InteracHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            int item = (viewpage.getCurrentItem()+1) % topnews.size();
+            viewpage.setCurrentItem(item);
+            handler.postDelayed(new MyRunnable(), 4000);
+        }
+    }
+    class MyRunnable implements Runnable{
 
+        @Override
+        public void run() {
+            handler.sendEmptyMessage(0);
+        }
+    }
     class TabDetailPagerListAdapter extends BaseAdapter {
 
         @Override
@@ -376,6 +426,38 @@ public class TabDetailPager extends DetailBasePager {
                     .into(imageView);
 //            加入到ViewPage容器中去
             container.addView(imageView);
+
+            imageView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event)
+                {
+                    switch (event.getAction()){
+                        case MotionEvent.ACTION_DOWN:
+                            //移除所有的消息和回调
+                            Log.e("TAG", "ACTION_DOWN --移除消息了了");
+                            //移除所有的消息和回调
+                            handler.removeCallbacksAndMessages(null);
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            Log.e("TAG", "ACTION_UP --开始发消息了");
+                            //移除所有的消息和回调
+                            handler.removeCallbacksAndMessages(null);
+                            handler.postDelayed(new MyRunnable(),4000);
+                            break;
+/*                        case MotionEvent.ACTION_CANCEL://事件丢失
+                            Log.e("TAG", "ACTION_CANCEL --开始发消息了");
+                            //移除所有的消息和回调
+                            handler.removeCallbacksAndMessages(null);
+                            handler.postDelayed(new MyRunnable(),4000);
+                            break;*/
+                    }
+                    return true;
+//                    设置点击事件要返回false
+//                    return false;
+                }
+            });
 
             Log.d("TabDetailPagerAdapter", imageUrl);
             return imageView;

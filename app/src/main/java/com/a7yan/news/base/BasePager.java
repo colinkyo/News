@@ -32,6 +32,8 @@ public class BasePager {
     public ImageButton ib_menu;
     @BindView(R.id.fl_content)
     public FrameLayout fl_content;
+    @BindView(R.id.ib_swich_list_grid)
+    public ImageButton ib_swich_list_grid;
 
     public BasePager(Context context) {
         this.mContext = context;
@@ -59,8 +61,7 @@ public class BasePager {
      * 控制左侧菜单开启与否
      */
     @OnClick(R.id.ib_menu)
-    public void onClick()
-    {
+    public void onClick() {
         MainActivity mainActivity = (MainActivity) mContext;
         SlidingMenu slidingMenu = mainActivity.getSlidingMenu();
         slidingMenu.toggle();
