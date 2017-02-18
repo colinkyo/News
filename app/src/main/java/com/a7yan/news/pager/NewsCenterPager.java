@@ -95,6 +95,14 @@ public class NewsCenterPager extends BasePager {
         if(position == 2){
 //            当打开图组时显示
             ib_swich_list_grid.setVisibility(View.VISIBLE);
+            ib_swich_list_grid.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //得到图组的操作实例（即对象）
+                    PhotosDetailPager photosDetailPager = (PhotosDetailPager) detailBasePagers.get(2);
+                    photosDetailPager.swichListAndGrid(ib_swich_list_grid);
+                }
+            });
         }else {
             ib_swich_list_grid.setVisibility(View.GONE);
         }
