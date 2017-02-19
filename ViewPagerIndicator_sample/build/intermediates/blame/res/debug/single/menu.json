@@ -1,5 +1,9 @@
 [
     {
+        "merged": "F:\\App\\News\\ViewPagerIndicator_sample\\build\\intermediates\\res\\merged\\debug\\menu\\menu.xml",
+        "source": "F:\\App\\News\\ViewPagerIndicator_sample\\src\\main\\res\\menu\\menu.xml"
+    },
+    {
         "merged": "E:\\App\\News\\ViewPagerIndicator_sample\\build\\intermediates\\res\\merged\\debug\\menu\\menu.xml",
         "source": "E:\\App\\News\\ViewPagerIndicator_sample\\src\\main\\res\\menu\\menu.xml"
     }

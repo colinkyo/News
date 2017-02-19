@@ -6,12 +6,19 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <com.viewpagerindicator.TabPageIndicator
+        <!--<com.viewpagerindicator.TabPageIndicator
             android:id="@+id/indicator"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical" />-->
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabpage_indicator"
+            style="@style/MyCustomTabLayout"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content">
+        </android.support.design.widget.TabLayout>
         <ImageButton
             android:id="@+id/ib_next_tab"
             android:src="@drawable/news_cate_arr"

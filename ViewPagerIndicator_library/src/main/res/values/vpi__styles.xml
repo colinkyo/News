@@ -13,9 +13,10 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-
+<!--与TabLayout一起用时，需要解决的兼容问题-->
 <resources>
-    <style name="Theme.PageIndicatorDefaults" parent="android:Theme">
+    <!--<style name="Theme.PageIndicatorDefaults" parent="android:Theme">-->
+    <style name="Theme.PageIndicatorDefaults" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="vpiIconPageIndicatorStyle">@style/Widget.IconPageIndicator</item>
         <item name="vpiTabPageIndicatorStyle">@style/Widget.TabPageIndicator</item>
     </style>

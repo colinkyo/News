@@ -1,14 +1,15 @@
 package com.a7yan.news.detailpager;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.a7yan.news.MainActivity;
@@ -33,10 +34,12 @@ public class TopicDetailPager extends DetailBasePager {
 
     @BindView(R.id.viewpage)
     ViewPager viewpage;
-    @BindView(R.id.indicator)
-    TabPageIndicator indicator;
+    /*@BindView(R.id.indicator)
+    TabPageIndicator indicator;*/
     @BindView(R.id.ib_next_tab)
     ImageButton ibNextTab;
+    @BindView(R.id.tabpage_indicator)
+    TabLayout indicator;
     private TextView textView;
     private List<NewsCenterPagerBean.NewsCenterPagerData.ChildrenData> children;
     //新闻详情页面的页签页面
@@ -71,13 +74,29 @@ public class TopicDetailPager extends DetailBasePager {
             TopicTabDetailPager tabDetailPager = new TopicTabDetailPager(mContext, children.get(i));
             tabDetailPagers.add(tabDetailPager);
         }
-        viewpage.setAdapter(new TopicDetailPager.NewsDetailPagerAdapter());
+        viewpage.setAdapter(new NewsDetailPagerAdapter());
         //关联ViewPager
-        indicator.setViewPager(viewpage);
-        //以后监听页面-TabPageIndicator
-        indicator.setOnPageChangeListener(new TopicDetailPager.MyOnPageChangeListener());
+        indicator.setupWithViewPager(viewpage);
+//        设置滚动模式
+        indicator.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+        for (int i = 0; i < indicator.getTabCount(); i++) {
+            TabLayout.Tab tab = indicator.getTabAt(i);
+            tab.setCustomView(getTabView(i));
+        }
+
+        viewpage.addOnPageChangeListener(new MyOnPageChangeListener());
     }
-    class MyOnPageChangeListener implements ViewPager.OnPageChangeListener{
+//    设置自定义指针样式
+    public View getTabView(int position){
+        View view = LayoutInflater.from(mContext).inflate(R.layout.tab_item, null);
+        TextView tv= (TextView) view.findViewById(R.id.textView);
+        tv.setText(children.get(position).getTitle());
+        ImageView img = (ImageView) view.findViewById(R.id.imageView);
+        img.setImageResource(R.drawable.dot_focus);
+        return view;
+    }
+    class MyOnPageChangeListener implements ViewPager.OnPageChangeListener {
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -86,9 +105,9 @@ public class TopicDetailPager extends DetailBasePager {
 
         @Override
         public void onPageSelected(int position) {
-            if(position==0){
+            if (position == 0) {
                 isEnableSlidingMenu(true);
-            }else {
+            } else {
                 isEnableSlidingMenu(false);
             }
         }
@@ -98,25 +117,28 @@ public class TopicDetailPager extends DetailBasePager {
 
         }
     }
+
     /**
      * 是否让SlidingMenu可以侧滑
+     *
      * @param isEnableSlidingMenu
      */
     private void isEnableSlidingMenu(boolean isEnableSlidingMenu) {
         MainActivity mainActivity = (MainActivity) mContext;
         SlidingMenu slidingMenu = mainActivity.getSlidingMenu();
-        if(isEnableSlidingMenu){
+        if (isEnableSlidingMenu) {
             //可以滑动
             slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-        }else{
+        } else {
             //不可以滑动
             slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
         }
 
     }
+
     @OnClick(R.id.ib_next_tab)
     public void onClick() {
-        viewpage.setCurrentItem(viewpage.getCurrentItem()+1);
+        viewpage.setCurrentItem(viewpage.getCurrentItem() + 1);
     }
 
     class NewsDetailPagerAdapter extends PagerAdapter {
