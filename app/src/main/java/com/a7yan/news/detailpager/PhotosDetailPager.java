@@ -1,6 +1,9 @@
 package com.a7yan.news.detailpager;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -17,8 +20,10 @@ import com.a7yan.news.R;
 import com.a7yan.news.base.DetailBasePager;
 import com.a7yan.news.domain.PhotosDetailPagerBean;
 import com.a7yan.news.pager.NewsCenterPager;
+import com.a7yan.news.utils.BitmapUtils;
 import com.a7yan.news.utils.CacheUtils;
 import com.a7yan.news.utils.Constants;
+import com.a7yan.news.utils.NetCacheUtils;
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -42,9 +47,41 @@ public class PhotosDetailPager extends DetailBasePager {
     GridView gridview;
     private List<PhotosDetailPagerBean.DataBean.NewsBean> news;
     private PhotosDetailPagerAdapter adapter;
+    private BitmapUtils bitmapUtils ;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case NetCacheUtils.SUCCESS://请求图片成功
+                    Bitmap bitmap = (Bitmap) msg.obj;
+                    int position = msg.arg1;
+                    Log.e("TAG","图片请求成功了=="+position);
+                    if(listview != null && listview.isShown()){
+                        ImageView imageView = (ImageView) listview.findViewWithTag(position);
+                        if(imageView != null && bitmap!= null){
+                            imageView.setImageBitmap(bitmap);
+                        }
+                    }
 
+                    if(gridview != null && gridview.isShown()){
+                        ImageView imageView = (ImageView) gridview.findViewWithTag(position);
+                        if(imageView != null && bitmap!= null){
+                            imageView.setImageBitmap(bitmap);
+                        }
+                    }
+
+                    break;
+                case NetCacheUtils.FAIL://请求图片失败
+                    position = msg.arg1;
+                    Log.e("TAG","图片请求失败了=="+position);
+                    break;
+            }
+        }
+    };
     public PhotosDetailPager(Context context) {
         super(context);
+        bitmapUtils = new BitmapUtils(handler);
     }
 
     @Override
@@ -183,15 +220,24 @@ public class PhotosDetailPager extends DetailBasePager {
                 viewHolder = (ViewHolder) view.getTag();
             }
             PhotosDetailPagerBean.DataBean.NewsBean newsBean = news.get(position);
+            viewHolder.iv_title.setText(newsBean.getTitle());
             String imgUrl = newsBean.getLargeimage();
 //            尤其没有对应的地址，所以统一用固定的地址
             imgUrl = Constants.BASE_URL+"/static/images/2014/02/11/59/1861510091Q6VY.jpg";
-            Glide.with(mContext)
+//            使用Glide加载网络图片
+           /* Glide.with(mContext)
                     .load(imgUrl)
                     .placeholder(R.drawable.home_scroll_default)
                     .error(R.drawable.home_scroll_default)
-                    .into(viewHolder.iv_icon);
-            viewHolder.iv_title.setText(newsBean.getTitle());
+                    .into(viewHolder.iv_icon);*/
+            //2.使用自己定义三级缓存请求网络图片
+            //设置tag,handler异步返回时，根据它找到控件
+            viewHolder.iv_icon.setTag(position);
+            Bitmap bitmap = bitmapUtils.getBitmap(imgUrl,position);//主线程
+            if(bitmap != null){
+                //图片来自，内存或者本地
+                viewHolder.iv_icon.setImageBitmap(bitmap);
+            }
             return view;
         }
     }
